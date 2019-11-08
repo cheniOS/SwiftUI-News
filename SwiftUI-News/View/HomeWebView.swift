@@ -15,11 +15,12 @@ struct HomeWebView: UIViewRepresentable     {
     }
      func makeUIView(context: Context) -> WKWebView{
         let webView =   WKWebView()
+     
         if  UITraitCollection.current.userInterfaceStyle == .dark{
             webView.backgroundColor = .black
         }
         webView.navigationDelegate = context.coordinator
- 
+        
         webView.loadHTMLString(html, baseURL: nil)
  
            return webView
@@ -29,11 +30,24 @@ struct HomeWebView: UIViewRepresentable     {
        }
     class Coordinator: NSObject ,WKNavigationDelegate {
         var webView : HomeWebView
+        
          init(_ homeWebView: HomeWebView) {
                     self.webView = homeWebView
-                }
-        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            
            
+                }
+        func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+            webView.reload()
+        }
+        func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+         webView.isHidden = true
+            
+        }
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+
+                        webView.isHidden = false
+                   }
             let fontFamilyStr = "document.getElementsByTagName('body')[0].style.fontFamily='Arial';"
             webView.evaluateJavaScript(fontFamilyStr, completionHandler: nil)
             webView.evaluateJavaScript("document.getElementsByTagName('body')[0].style.webkitTextSizeAdjust= '250%'", completionHandler: nil)
